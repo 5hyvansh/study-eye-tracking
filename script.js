@@ -1,17 +1,27 @@
+import {
+    FaceLandmarker,
+    FilesetResolver
+} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/+esm";
+
 const startBtn = document.getElementById("startBtn");
 const status = document.getElementById("status");
 const eyeStatus = document.getElementById("eyeStatus");
 const video = document.getElementById("video");
 
-let faceLandmarker;
+let faceLandmarker = null;
 let lastVideoTime = -1;
 
+
+// Load AI model
 async function setupFaceTracker() {
-    const vision = await window.FilesetResolver.forVisionTasks(
+
+    status.textContent = "Status: Loading AI model...";
+
+    const vision = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm"
     );
 
-    faceLandmarker = await window.FaceLandmarker.createFromOptions(
+    faceLandmarker = await FaceLandmarker.createFromOptions(
         vision,
         {
             baseOptions: {
@@ -28,50 +38,43 @@ async function setupFaceTracker() {
             minTrackingConfidence: 0.5
         }
     );
+
+    console.log("Face tracker loaded!");
 }
 
+
+// Start webcam
 async function startCamera() {
-    try {
 
-        status.textContent = "Status: Starting camera...";
+    const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+            width: 640,
+            height: 480,
+            facingMode: "user"
+        },
+        audio: false
+    });
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: 640,
-                height: 480,
-                facingMode: "user"
-            },
-            audio: false
-        });
+    video.srcObject = stream;
 
-        video.srcObject = stream;
+    await video.play();
 
-        await video.play();
+    status.textContent = "Status: AI Tracking ON 🟢";
 
-        status.textContent = "Status: AI Tracking ON 🟢";
+    startBtn.textContent = "Monitoring...";
+    startBtn.disabled = true;
 
-        startBtn.disabled = true;
-        startBtn.textContent = "Monitoring...";
-
-        detectFace();
-
-    } catch (error) {
-
-        console.error(error);
-
-        status.textContent =
-            "Camera error: Please allow camera permission ❌";
-    }
+    detectFace();
 }
 
-async function detectFace() {
 
-    if (!faceLandmarker) {
-        requestAnimationFrame(detectFace);
-        return;
-    }
+// Detect face
+function detectFace() {
 
-    if (video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+    if (
+        video.readyState >= 2 &&
+        video.currentTime !== lastVideoTime
+    ) {
 
         lastVideoTime = video.currentTime;
 
@@ -86,27 +89,21 @@ async function detectFace() {
             results.faceLandmarks.length > 0
         ) {
 
-            const landmarks = results.faceLandmarks[0];
-
-            /*
-             * MediaPipe has 478 face landmarks.
-             * For now we only confirm that a face
-             * is successfully detected.
-             */
-
             eyeStatus.textContent =
-                "Eyes: Face detected 👤";
+                "Face: Detected 👤";
 
         } else {
 
             eyeStatus.textContent =
-                "Eyes: Face not detected ⚠️";
+                "Face: Not detected ⚠️";
         }
     }
 
     requestAnimationFrame(detectFace);
 }
 
+
+// Start button
 startBtn.addEventListener("click", async () => {
 
     startBtn.disabled = true;
@@ -122,7 +119,10 @@ startBtn.addEventListener("click", async () => {
         console.error(error);
 
         status.textContent =
-            "AI tracker failed to load ❌";
+            "Error: AI tracker failed to load ❌";
+
+        eyeStatus.textContent =
+            "Check browser console for details.";
 
         startBtn.disabled = false;
     }
