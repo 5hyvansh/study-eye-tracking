@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Study Eye Alarm</title>
 
   <style>
     body {
       margin: 0;
-      padding: 40px 20px;
+      padding: 30px 15px;
       font-family: Arial, sans-serif;
       text-align: center;
       background: #111;
@@ -16,16 +17,29 @@
     }
 
     h1 {
-      margin-bottom: 10px;
+      margin-bottom: 5px;
     }
 
     p {
-      color: #bbb;
+      color: #aaa;
+    }
+
+    .camera-box {
+      width: 640px;
+      max-width: 95%;
+      margin: 25px auto;
+    }
+
+    video {
+      width: 100%;
+      display: block;
+      border-radius: 15px;
+      transform: scaleX(-1);
+      background: #222;
     }
 
     button {
-      margin-top: 20px;
-      padding: 12px 24px;
+      padding: 13px 25px;
       border: none;
       border-radius: 8px;
       background: white;
@@ -37,21 +51,17 @@
 
     button:disabled {
       opacity: 0.5;
-      cursor: not-allowed;
     }
 
-    #status {
+    .status {
       margin-top: 20px;
+      font-size: 18px;
       font-weight: bold;
     }
 
-    video {
-      width: 400px;
-      max-width: 95%;
-      margin: 25px auto;
-      display: block;
-      border-radius: 15px;
-      background: #222;
+    .eye-status {
+      margin-top: 10px;
+      font-size: 22px;
     }
   </style>
 </head>
@@ -64,9 +74,19 @@
 
   <button id="startBtn">Start Study</button>
 
-  <p id="status">Status: Not Started</p>
+  <div class="camera-box">
+    <video id="video" autoplay playsinline></video>
+  </div>
 
-  <script src="script.js"></script>
+  <div class="status" id="status">
+    Status: Not Started
+  </div>
+
+  <div class="eye-status" id="eyeStatus">
+    Eyes: —
+  </div>
+
+  <script type="module" src="script.js"></script>
 
 </body>
 </html>
